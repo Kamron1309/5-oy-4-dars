@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', function() {
-    // DOM Elements
+    // DOM elementlari
     const newTaskInput = document.getElementById('new-task-input');
     const addTaskBtn = document.getElementById('add-task-btn');
     const todoTasks = document.getElementById('todo-tasks');
@@ -7,17 +7,17 @@ document.addEventListener('DOMContentLoaded', function() {
     const todoCount = document.getElementById('todo-count');
     const doneCount = document.getElementById('done-count');
     
-    // Initialize tasks array
+    // Vazifalar massivi
     let tasks = loadTasks();
     renderTasks();
     
-    // Event Listeners
+    // Event listenerlar
     addTaskBtn.addEventListener('click', addTask);
     newTaskInput.addEventListener('keypress', function(e) {
         if (e.key === 'Enter') addTask();
     });
     
-    // Functions
+    // Funktsiyalar
     function addTask() {
         const taskText = newTaskInput.value.trim();
         if (taskText) {
@@ -37,49 +37,55 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     function renderTasks() {
-        // Clear containers
+        // Konteynerlarni tozalash
         todoTasks.innerHTML = '';
         doneTasks.innerHTML = '';
         
-        // Filter tasks
+        // Vazifalarni filtrlash
         const todoTasksArray = tasks.filter(task => !task.completed);
         const doneTasksArray = tasks.filter(task => task.completed);
         
-        // Update counters
+        // Hisoblagichlarni yangilash
         todoCount.textContent = todoTasksArray.length;
         doneCount.textContent = doneTasksArray.length;
         
-        // Render to-do tasks (sorted by creation date, newest first)
-        todoTasksArray
-            .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-            .forEach(task => {
-                todoTasks.appendChild(createTaskElement(task));
-            });
+        // Bajariladigan vazifalarni chiqarish (yangi -> eski tartibda)
+        if (todoTasksArray.length === 0) {
+            todoTasks.innerHTML = '<div class="empty-state">Hozircha bajariladigan vazifalar yo\'q</div>';
+        } else {
+            todoTasksArray
+                .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+                .forEach(task => {
+                    todoTasks.appendChild(createTaskElement(task));
+                });
+        }
         
-        // Render done tasks (sorted by completion date, newest first)
-        doneTasksArray
-            .sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt))
-            .forEach(task => {
-                doneTasks.appendChild(createTaskElement(task));
-            });
+        // Bajarilgan vazifalarni chiqarish (yangi -> eski tartibda)
+        if (doneTasksArray.length === 0) {
+            doneTasks.innerHTML = '<div class="empty-state">Hozircha bajarilgan vazifalar yo\'q</div>';
+        } else {
+            doneTasksArray
+                .sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt))
+                .forEach(task => {
+                    doneTasks.appendChild(createTaskElement(task));
+                });
+        }
     }
     
     function createTaskElement(task) {
-        // Main task container
+        // Asosiy vazifa konteyneri
         const taskDiv = document.createElement('div');
-        taskDiv.className = `flex items-center justify-between p-3 rounded-lg ${
-            task.completed ? 'bg-gray-50' : 'bg-white hover:bg-gray-50'
-        } border border-gray-200`;
+        taskDiv.className = `task-item ${task.completed ? 'completed' : ''}`;
         
-        // Left side (checkbox and text)
-        const leftSide = document.createElement('div');
-        leftSide.className = 'flex items-center flex-grow';
+        // Chap tomon (checkbox va matn)
+        const taskContent = document.createElement('div');
+        taskContent.className = 'task-content';
         
         // Checkbox
         const checkbox = document.createElement('input');
         checkbox.type = 'checkbox';
         checkbox.checked = task.completed;
-        checkbox.className = 'w-5 h-5 mr-3 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer';
+        checkbox.className = 'task-checkbox';
         checkbox.addEventListener('change', function() {
             task.completed = !task.completed;
             task.updatedAt = new Date().toISOString();
@@ -87,25 +93,24 @@ document.addEventListener('DOMContentLoaded', function() {
             renderTasks();
         });
         
-        // Task text (with edit functionality)
+        // Vazifa matni
         const textContainer = document.createElement('div');
-        textContainer.className = 'flex-grow';
         
-        const taskTextSpan = document.createElement('span');
-        taskTextSpan.className = `text-gray-800 ${task.completed ? 'line-through text-gray-500' : ''}`;
+        const taskTextSpan = document.createElement('div');
+        taskTextSpan.className = 'task-text';
         taskTextSpan.textContent = task.text;
         
-        // Timestamps
+        // Vaqt ma'lumotlari
         const timeInfo = document.createElement('div');
-        timeInfo.className = 'text-xs text-gray-500 mt-1';
+        timeInfo.className = 'task-time';
         
         const createdTime = document.createElement('div');
-        createdTime.textContent = `Created: ${formatDate(task.createdAt)}`;
+        createdTime.textContent = `Yaratilgan: ${formatDate(task.createdAt)}`;
         
         const updatedTime = document.createElement('div');
         updatedTime.textContent = task.completed 
-            ? `Completed: ${formatDate(task.updatedAt)}`
-            : `Updated: ${formatDate(task.updatedAt)}`;
+            ? `Yakunlangan: ${formatDate(task.updatedAt)}`
+            : `Yangilangan: ${formatDate(task.updatedAt)}`;
         
         timeInfo.appendChild(createdTime);
         timeInfo.appendChild(updatedTime);
@@ -113,41 +118,41 @@ document.addEventListener('DOMContentLoaded', function() {
         textContainer.appendChild(taskTextSpan);
         textContainer.appendChild(timeInfo);
         
-        // Right side (buttons)
-        const rightSide = document.createElement('div');
-        rightSide.className = 'flex items-center space-x-2 ml-3';
+        // O'ng tomon (tugmalar)
+        const taskActions = document.createElement('div');
+        taskActions.className = 'task-actions';
         
-        // Edit button
+        // Tahrirlash tugmasi
         const editBtn = document.createElement('button');
-        editBtn.className = 'text-gray-500 hover:text-blue-600 transition-colors';
+        editBtn.className = 'task-btn edit-btn';
         editBtn.innerHTML = '<i class="fas fa-edit"></i>';
-        editBtn.title = 'Edit task';
+        editBtn.title = 'Vazifani tahrirlash';
         editBtn.addEventListener('click', function() {
             editTask(task, taskTextSpan);
         });
         
-        // Delete button
+        // O'chirish tugmasi
         const deleteBtn = document.createElement('button');
-        deleteBtn.className = 'text-gray-500 hover:text-red-600 transition-colors';
+        deleteBtn.className = 'task-btn delete-btn';
         deleteBtn.innerHTML = '<i class="fas fa-trash-alt"></i>';
-        deleteBtn.title = 'Delete task';
+        deleteBtn.title = 'Vazifani o\'chirish';
         deleteBtn.addEventListener('click', function() {
-            if (confirm('Are you sure you want to delete this task?')) {
+            if (confirm('Haqiqatan ham bu vazifani o\'chirmoqchimisiz?')) {
                 tasks = tasks.filter(t => t.id !== task.id);
                 saveTasks();
                 renderTasks();
             }
         });
         
-        // Assemble elements
-        rightSide.appendChild(editBtn);
-        rightSide.appendChild(deleteBtn);
+        // Elementlarni yig'ish
+        taskActions.appendChild(editBtn);
+        taskActions.appendChild(deleteBtn);
         
-        leftSide.appendChild(checkbox);
-        leftSide.appendChild(textContainer);
+        taskContent.appendChild(checkbox);
+        taskContent.appendChild(textContainer);
         
-        taskDiv.appendChild(leftSide);
-        taskDiv.appendChild(rightSide);
+        taskDiv.appendChild(taskContent);
+        taskDiv.appendChild(taskActions);
         
         return taskDiv;
     }
@@ -157,10 +162,13 @@ document.addEventListener('DOMContentLoaded', function() {
         const input = document.createElement('input');
         input.type = 'text';
         input.value = currentText;
-        input.className = 'flex-grow px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500';
+        input.className = 'task-input';
+        input.style.margin = '0';
+        input.style.width = '100%';
         
-        // Replace text with input field
-        textElement.replaceWith(input);
+        // Matnni input bilan almashtirish
+        const parent = textElement.parentNode;
+        parent.replaceChild(input, textElement);
         input.focus();
         
         function saveEdit() {
@@ -173,7 +181,7 @@ document.addEventListener('DOMContentLoaded', function() {
             renderTasks();
         }
         
-        // Save on Enter or blur
+        // Enter yoki blur orqali saqlash
         input.addEventListener('keypress', function(e) {
             if (e.key === 'Enter') saveEdit();
         });
@@ -183,7 +191,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     function formatDate(isoString) {
         const date = new Date(isoString);
-        return date.toLocaleString();
+        return date.toLocaleString('uz-UZ');
     }
     
     function loadTasks() {
