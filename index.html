@@ -1,52 +1,255 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="uz">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Enhanced To-Do List</title>
+    <title>Mening Vazifa Ro'yxatim</title>
+    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script>
+        // Tailwind konfiguratsiyasi
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#4CAF50',
+                        primaryHover: '#45a049',
+                        lightGreen: '#e8f5e9',
+                        borderLight: '#c8e6c9'
+                    },
+                    boxShadow: {
+                        'custom': '0 10px 30px rgba(0, 0, 0, 0.08)',
+                        'task': '0 4px 12px rgba(0, 0, 0, 0.05)',
+                        'taskHover': '0 6px 15px rgba(0, 0, 0, 0.08)'
+                    }
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        /* Maxsus uslublar */
+        @layer utilities {
+            .task-checkbox {
+                accent-color: #4CAF50;
+            }
+            
+            .task-item.completed .task-text {
+                text-decoration: line-through;
+                color: #777;
+            }
+            
+            .task-input {
+                @apply text-[1.1em] p-1 px-2 border border-primary rounded outline-none w-full box-border font-sans;
+            }
+        }
+    </style>
 </head>
-<body class="bg-gray-100 min-h-screen py-8">
-    <div class="max-w-2xl mx-auto px-4">
-        <h1 class="text-3xl font-bold text-center text-gray-800 mb-8">Enhanced To-Do List</h1>
-        
-        <!-- Add Task Form -->
-        <div class="flex gap-2 mb-6">
-            <input 
-                type="text" 
-                id="new-task-input" 
-                placeholder="Add a new task..." 
-                class="flex-grow px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-            <button 
-                id="add-task-btn" 
-                class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-            >
-                <i class="fas fa-plus mr-2"></i>Junatish
+<body class="bg-[#f4f7f6] text-[#333] font-sans leading-6 m-0 p-5 flex justify-center items-start min-h-screen">
+    <div class="bg-white rounded-xl shadow-custom w-full max-w-[800px] p-6 box-border">
+        <h1 class="text-center text-[#2c3e50] mb-6 text-2xl md:text-[2.2em]">
+            <i class="fas fa-clipboard-list"></i> Mening Vazifalarim
+        </h1>
+
+        <div class="new-task-section flex flex-col md:flex-row mb-6 gap-2">
+            <input type="text" id="new-task-input" placeholder="Yangi vazifa qo'shish..." autocomplete="off" 
+                   class="flex-grow p-3 px-4 border-2 border-[#ddd] rounded-lg text-base outline-none transition-colors focus:border-primary">
+            <button id="add-task-btn" class="bg-primary text-white border-none p-3 px-5 rounded-lg cursor-pointer text-base transition-all duration-300 flex items-center gap-2 justify-center hover:bg-primaryHover hover:-translate-y-0.5 active:translate-y-0">
+                <i class="fas fa-plus"></i> Vazifa qo'shish
             </button>
         </div>
-        
-        <!-- Tasks Sections -->
-        <div class="space-y-6">
-            <!-- To-Do Tasks -->
-            <div class="bg-white rounded-lg shadow p-6">
-                <h2 class="text-xl font-semibold text-gray-800 border-b pb-2 mb-4">
-                    Tasks to do - <span id="todo-count" class="text-gray-500">0</span>
-                </h2>
-                <div id="todo-tasks" class="space-y-3"></div>
+
+        <div class="task-list-section mb-6">
+            <div class="task-list-header flex justify-between items-center mb-4 pb-3 border-b border-[#eee]">
+                <h2 class="m-0 text-[#34495e] text-xl">Bajariladigan Vazifalar</h2>
+                <span class="task-count bg-[#e0e0e0] text-[#555] p-1 px-3 rounded-full text-sm font-bold" id="todo-count">0</span>
             </div>
-            
-            <!-- Done Tasks -->
-            <div class="bg-white rounded-lg shadow p-6">
-                <h2 class="text-xl font-semibold text-gray-800 border-b pb-2 mb-4">
-                    Done - <span id="done-count" class="text-gray-500">0</span>
-                </h2>
-                <div id="done-tasks" class="space-y-3"></div>
+            <div class="task-list flex flex-col gap-4" id="todo-tasks">
+                <!-- To-Do tasks will be rendered here by JS -->
+            </div>
+        </div>
+
+        <div class="task-list-section mb-6">
+            <div class="task-list-header flex justify-between items-center mb-4 pb-3 border-b border-[#eee]">
+                <h2 class="m-0 text-[#34495e] text-xl">Bajarilgan Vazifalar</h2>
+                <span class="task-count bg-[#e0e0e0] text-[#555] p-1 px-3 rounded-full text-sm font-bold" id="done-count">0</span>
+            </div>
+            <div class="task-list flex flex-col gap-4" id="done-tasks">
+                <!-- Done tasks will be rendered here by JS -->
             </div>
         </div>
     </div>
 
-    <script src="./app.js"></script>
+    <!-- JavaScript kod (o'zgarmagan) -->
+    <script src="./app.js">
+        document.addEventListener('DOMContentLoaded', function() {
+            const newTaskInput = document.getElementById('new-task-input');
+            const addTaskBtn = document.getElementById('add-task-btn');
+            const todoTasksContainer = document.getElementById('todo-tasks');
+            const doneTasksContainer = document.getElementById('done-tasks');
+            const todoCount = document.getElementById('todo-count');
+            const doneCount = document.getElementById('done-count');
+            
+            let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+            
+            // Vazifalarni render qilish
+            function renderTasks() {
+                todoTasksContainer.innerHTML = '';
+                doneTasksContainer.innerHTML = '';
+                
+                const todoTasks = tasks.filter(task => !task.completed);
+                const doneTasks = tasks.filter(task => task.completed);
+                
+                todoCount.textContent = todoTasks.length;
+                doneCount.textContent = doneTasks.length;
+                
+                // Bajariladigan vazifalarni chiqarish
+                todoTasks.forEach(task => {
+                    const taskElement = createTaskElement(task);
+                    todoTasksContainer.appendChild(taskElement);
+                });
+                
+                // Bajarilgan vazifalarni chiqarish
+                doneTasks.forEach(task => {
+                    const taskElement = createTaskElement(task);
+                    doneTasksContainer.appendChild(taskElement);
+                });
+                
+                // Agar bajariladigan vazifalar bo'sh bo'lsa
+                if (todoTasks.length === 0) {
+                    todoTasksContainer.innerHTML = `
+                        <div class="empty-state text-center text-[#777] p-5 bg-[#f9f9f9] border border-dashed border-[#ddd] rounded-lg mt-4">
+                            Hozircha bajariladigan vazifalar mavjud emas
+                        </div>
+                    `;
+                }
+                
+                // Agar bajarilgan vazifalar bo'sh bo'lsa
+                if (doneTasks.length === 0) {
+                    doneTasksContainer.innerHTML = `
+                        <div class="empty-state text-center text-[#777] p-5 bg-[#f9f9f9] border border-dashed border-[#ddd] rounded-lg mt-4">
+                            Hozircha bajarilgan vazifalar mavjud emas
+                        </div>
+                    `;
+                }
+                
+                // LocalStorage ga saqlash
+                localStorage.setItem('tasks', JSON.stringify(tasks));
+            }
+            
+            // Vazifa elementini yaratish
+            function createTaskElement(task) {
+                const taskElement = document.createElement('div');
+                taskElement.className = 'task-item bg-[#fdfdfd] border border-[#e0e0e0] rounded-lg p-4 px-5 shadow-task transition-all duration-300 hover:-translate-y-0.5 hover:shadow-taskHover flex flex-col md:flex-row md:justify-between md:items-center gap-3';
+                
+                if (task.completed) {
+                    taskElement.classList.add('completed');
+                    taskElement.classList.add('bg-lightGreen');
+                    taskElement.classList.add('border-borderLight');
+                    taskElement.classList.add('opacity-80');
+                }
+                
+                const currentTime = new Date().toLocaleTimeString('uz-UZ', { 
+                    hour: '2-digit', 
+                    minute: '2-digit' 
+                });
+                
+                taskElement.innerHTML = `
+                    <div class="task-content flex items-center flex-grow gap-4 text-[#444]">
+                        <input type="checkbox" class="task-checkbox min-w-[20px] min-h-[20px] cursor-pointer" ${task.completed ? 'checked' : ''}>
+                        <div class="flex-grow">
+                            <div class="task-text text-[1.1em] break-words transition-all">${task.text}</div>
+                            <div class="task-time text-sm text-[#888] mt-1">${task.time || currentTime}</div>
+                        </div>
+                    </div>
+                    <div class="task-actions flex gap-2 w-full md:w-auto justify-end md:justify-start">
+                        <button class="task-btn edit-btn bg-none border-none cursor-pointer text-[1.1em] p-2 rounded transition-colors duration-200 text-[#3498db] hover:bg-[#eaf6fc]">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="task-btn delete-btn bg-none border-none cursor-pointer text-[1.1em] p-2 rounded transition-colors duration-200 text-[#e74c3c] hover:bg-[#fdeaea]">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                `;
+                
+                // Checkbox uchun hodisa
+                const checkbox = taskElement.querySelector('.task-checkbox');
+                checkbox.addEventListener('change', function() {
+                    task.completed = checkbox.checked;
+                    renderTasks();
+                });
+                
+                // Tahrirlash uchun hodisa
+                const editBtn = taskElement.querySelector('.edit-btn');
+                editBtn.addEventListener('click', function() {
+                    const taskTextElement = taskElement.querySelector('.task-text');
+                    const currentText = taskTextElement.textContent;
+                    
+                    const editInput = document.createElement('input');
+                    editInput.type = 'text';
+                    editInput.value = currentText;
+                    editInput.className = 'task-input';
+                    
+                    taskTextElement.replaceWith(editInput);
+                    editInput.focus();
+                    
+                    editInput.addEventListener('blur', function() {
+                        finishEditing();
+                    });
+                    
+                    editInput.addEventListener('keypress', function(e) {
+                        if (e.key === 'Enter') {
+                            finishEditing();
+                        }
+                    });
+                    
+                    function finishEditing() {
+                        task.text = editInput.value;
+                        renderTasks();
+                    }
+                });
+                
+                // O'chirish uchun hodisa
+                const deleteBtn = taskElement.querySelector('.delete-btn');
+                deleteBtn.addEventListener('click', function() {
+                    tasks = tasks.filter(t => t.id !== task.id);
+                    renderTasks();
+                });
+                
+                return taskElement;
+            }
+            
+            // Yangi vazifa qo'shish
+            addTaskBtn.addEventListener('click', addTask);
+            newTaskInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    addTask();
+                }
+            });
+            
+            function addTask() {
+                const taskText = newTaskInput.value.trim();
+                if (taskText) {
+                    const currentTime = new Date().toLocaleTimeString('uz-UZ', { 
+                        hour: '2-digit', 
+                        minute: '2-digit' 
+                    });
+                    
+                    tasks.push({
+                        id: Date.now(),
+                        text: taskText,
+                        completed: false,
+                        time: currentTime
+                    });
+                    
+                    newTaskInput.value = '';
+                    renderTasks();
+                }
+            }
+            
+            // Dastlabki vazifalarni render qilish
+            renderTasks();
+        });
+    </script>
 </body>
 </html>
